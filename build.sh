@@ -5,8 +5,13 @@ set -e  # Exit immediately if a command exits with a non-zero status
 # Define user and directory variables
 USER="metal_deploy_prowlarr"
 HOME_DIR="/home/$USER"
-BUILD_DIR="$HOME_DIR/build"
-ARCHIVE_NAME="$HOME_DIR/Prowlarr.tar.gz"
+REPO_DIR="$HOME_DIR/repo"
+BUILD_DIR="$REPO_DIR/build"
+ARCHIVE_NAME="Prowlarr.tar.gz"
+
+# Clean up previous builds and leftover files
+rm -rf "$BUILD_DIR"
+rm -f "$REPO_DIR/$ARCHIVE_NAME"
 
 # Ensure necessary packages are installed
 apt update && apt install -y curl sqlite3
@@ -20,34 +25,21 @@ case $arch in
 esac
 
 # Download Prowlarr package
-wget --content-disposition \
-	"http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch" \
-	-O "$ARCHIVE_NAME"
+wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch" -O "$REPO_DIR/$ARCHIVE_NAME"
 
-# Prepare the build directory
-rm -rf "$BUILD_DIR"  # Clean up previous build
+# Extract into the build directory
 mkdir -p "$BUILD_DIR"
-
-# Extract into build directory
-tar -xvzf "$ARCHIVE_NAME" -C "$BUILD_DIR"
-
-# Check for extracted directory and move accordingly
-if [ -d "$BUILD_DIR/Prowlarr" ]; then
-	rm -rf "$BUILD_DIR/Prowlarr/Prowlarr"
-else
-	mkdir -p "$BUILD_DIR/Prowlarr"
-	mv "$BUILD_DIR/"* "$BUILD_DIR/Prowlarr/"
-fi
+tar -xvzf "$REPO_DIR/$ARCHIVE_NAME" -C "$BUILD_DIR"
 
 # Create data directory
-mkdir -p "$BUILD_DIR/Prowlarr/prowlarr-data"
+mkdir -p "$BUILD_DIR/prowlarr-data"
 
-# Set ownership and permissions
+# Set ownership and permissions for the entire build directory
 chown -R $USER:$USER "$BUILD_DIR"
 chmod -R u+rwx "$BUILD_DIR"
 
-# Create run.sh script
-cat <<'EOF' > "$BUILD_DIR/Prowlarr/run.sh"
+# Create run.sh script in the build directory
+cat <<'EOF' > "$BUILD_DIR/run.sh"
 #!/bin/bash
 
 # Define the base directory where your application is running
@@ -61,7 +53,7 @@ DATA_DIR=$(readlink -f "$DATA_DIR")
 exec "$BASE_DIR/Prowlarr" -nobrowser -data="$DATA_DIR"
 EOF
 
-chmod +x "$BUILD_DIR/Prowlarr/run.sh"
-rm "$ARCHIVE_NAME"
+chmod +x "$BUILD_DIR/run.sh"
+rm "$REPO_DIR/$ARCHIVE_NAME"
 
-echo "Build complete. Run './build/Prowlarr/run.sh' to start Prowlarr."
+echo "Build complete. Run './repo/build/run.sh' to start Prowlarr."
