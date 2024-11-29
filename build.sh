@@ -27,8 +27,8 @@ wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatef
 tar -xvzf "$HOME_DIR/$ARCHIVE_NAME" -C "$HOME_DIR"
 
 # Prepare directories
-mkdir -p "$HOME_DIR/build/Prowlarr"
-mv "$HOME_DIR/Prowlarr/"* "$HOME_DIR/build/Prowlarr/"
+mkdir -p "$HOME_DIR/build/"
+mv "$HOME_DIR/Prowlarr" "$HOME_DIR/build/Prowlarr/"
 mkdir -p "$HOME_DIR/build/prowlarr-data"
 
 # Set ownership and permissions for the entire build directory
