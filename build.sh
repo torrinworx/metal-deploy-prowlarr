@@ -13,19 +13,22 @@ apt install -y curl sqlite3
 # Determine architecture
 arch=$(dpkg --print-architecture)
 case $arch in
-    amd64) arch="x64" ;;
-    arm|armf|armh) arch="arm" ;;
-    arm64) arch="arm64" ;;
-    *) echo "Unsupported architecture: $arch" && exit 1 ;;
+	amd64) arch="x64" ;;
+	arm|armf|armh) arch="arm" ;;
+	arm64) arch="arm64" ;;
+	*) echo "Unsupported architecture: $arch" && exit 1 ;;
 esac
 
+# Define the filename for the downloaded archive
+ARCHIVE_NAME="Prowlarr.tar.gz"
+
 # Download and uncompress binaries
-wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch" -P "$HOME_DIR"
-tar -xvzf "$HOME_DIR/Prowlarr*.linux*.tar.gz" -C "$HOME_DIR"
+wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch" -O "$HOME_DIR/$ARCHIVE_NAME"
+tar -xvzf "$HOME_DIR/$ARCHIVE_NAME" -C "$HOME_DIR"
 
 # Prepare directories
 mkdir -p "$HOME_DIR/build/Prowlarr"
-mv "$HOME_DIR/Prowlarr"/* "$HOME_DIR/build/Prowlarr/"
+mv "$HOME_DIR/Prowlarr/"* "$HOME_DIR/build/Prowlarr/"
 mkdir -p "$HOME_DIR/build/prowlarr-data"
 
 # Set ownership and permissions for the entire build directory
@@ -50,6 +53,6 @@ exec "$BASE_DIR/Prowlarr/Prowlarr" -nobrowser -data="$DATA_DIR"
 EOF
 
 chmod +x "$HOME_DIR/build/run.sh"
-rm "$HOME_DIR/Prowlarr*.linux*.tar.gz"
+rm "$HOME_DIR/$ARCHIVE_NAME"
 
 echo "Build complete. Run './build/run.sh' to start Prowlarr."
