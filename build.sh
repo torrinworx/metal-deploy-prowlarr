@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e  # Exit immediately if a command exits with a non-zero status
+set -e  # Exit script immediately on error
 
 # Define the user and home directory
 USER="metal_deploy_prowlarr"
@@ -22,13 +22,14 @@ esac
 # Define the filename for the downloaded archive
 ARCHIVE_NAME="Prowlarr.tar.gz"
 
-# Download and uncompress binaries
+# Download the Prowlarr package
 wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch" -O "$HOME_DIR/$ARCHIVE_NAME"
-tar -xvzf "$HOME_DIR/$ARCHIVE_NAME" -C "$HOME_DIR"
 
-# Prepare directories
-mkdir -p "$HOME_DIR/build/"
-mv "$HOME_DIR/Prowlarr" "$HOME_DIR/build/Prowlarr/"
+# Extract the package directly to the ./build directory
+mkdir -p "$HOME_DIR/build"
+tar -xvzf "$HOME_DIR/$ARCHIVE_NAME" -C "$HOME_DIR/build"
+
+# Prepare the data directory
 mkdir -p "$HOME_DIR/build/prowlarr-data"
 
 # Set ownership and permissions for the entire build directory
