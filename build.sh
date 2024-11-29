@@ -21,6 +21,9 @@ mkdir -p ./build/Prowlarr
 mv Prowlarr/* ./build/Prowlarr/
 mkdir -p ./build/prowlarr-data
 
+chown -R $(whoami):$(whoami) ./build/prowlarr-data
+chmod -R u+rwx ./build/prowlarr-data
+
 cat <<'EOF' > ./build/run.sh
 #!/bin/bash
 
