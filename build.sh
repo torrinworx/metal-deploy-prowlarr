@@ -2,9 +2,13 @@
 
 set -e  # Exit immediately if a command exits with a non-zero status
 
-# Update and install necessary packages
-sudo apt update
-sudo apt install -y curl sqlite3
+# Define the user and home directory
+USER="metal_deploy_prowlarr"
+HOME_DIR="/home/$USER"
+
+# Ensure necessary packages are installed
+apt update
+apt install -y curl sqlite3
 
 # Determine architecture
 arch=$(dpkg --print-architecture)
@@ -16,20 +20,20 @@ case $arch in
 esac
 
 # Download and uncompress binaries
-wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch"
-tar -xvzf Prowlarr*.linux*.tar.gz
+wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch" -P "$HOME_DIR"
+tar -xvzf "$HOME_DIR/Prowlarr*.linux*.tar.gz" -C "$HOME_DIR"
 
 # Prepare directories
-mkdir -p ./build/Prowlarr
-mv Prowlarr/* ./build/Prowlarr/
-mkdir -p ./build/prowlarr-data
+mkdir -p "$HOME_DIR/build/Prowlarr"
+mv "$HOME_DIR/Prowlarr"/* "$HOME_DIR/build/Prowlarr/"
+mkdir -p "$HOME_DIR/build/prowlarr-data"
 
 # Set ownership and permissions for the entire build directory
-chown -R $(whoami):$(whoami) ./build
-chmod -R u+rwx ./build
+chown -R $USER:$USER "$HOME_DIR/build"
+chmod -R u+rwx "$HOME_DIR/build"
 
 # Create the run.sh script with absolute paths
-cat <<'EOF' > ./build/run.sh
+cat <<'EOF' > "$HOME_DIR/build/run.sh"
 #!/bin/bash
 
 # Define the base directory where your application is running
@@ -45,7 +49,7 @@ DATA_DIR=$(readlink -f "$DATA_DIR")
 exec "$BASE_DIR/Prowlarr/Prowlarr" -nobrowser -data="$DATA_DIR"
 EOF
 
-chmod +x ./build/run.sh
-rm Prowlarr*.linux*.tar.gz
+chmod +x "$HOME_DIR/build/run.sh"
+rm "$HOME_DIR/Prowlarr*.linux*.tar.gz"
 
 echo "Build complete. Run './build/run.sh' to start Prowlarr."
