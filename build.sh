@@ -1,7 +1,8 @@
 #!/bin/bash
 
-set -e
+set -e  # Exit immediately if a command exits with a non-zero status
 
+# Ensure required packages are installed
 sudo apt update
 sudo apt install -y curl sqlite3
 
@@ -18,19 +19,16 @@ esac
 wget --content-disposition "http://prowlarr.servarr.com/v1/update/master/updatefile?os=linux&runtime=netcore&arch=$arch"
 tar -xvzf Prowlarr*.linux*.tar.gz
 
-# Move files to the build directory
-mkdir -p ./build
-mv Prowlarr ./build/
+# Move files to the build directory within the user folder
+mkdir -p ./build/Prowlarr
+mv Prowlarr/* ./build/Prowlarr/
 
 # Create the run.sh script
 cat <<'EOF' > ./build/run.sh
 #!/bin/bash
 
-# Set the necessary environment variables
-source ./.env
-
 # Run Prowlarr
-exec /opt/Prowlarr/Prowlarr -nobrowser -data=/var/lib/prowlarr/
+exec "$(dirname "$0")/Prowlarr/Prowlarr" -nobrowser -data=/var/lib/prowlarr/
 EOF
 
 chmod +x ./build/run.sh
